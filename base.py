@@ -167,7 +167,7 @@ class ExifMetadataViewer(QMainWindow):
         try:
             # Open image with Pillow
             with Image.open(file_path) as image:
-                exif_data = image._getexif()
+                exif_data = image.getexif()
                 
                 print(exif_data)  # Debug: print raw EXIF data to console
 
