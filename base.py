@@ -163,35 +163,103 @@ class ExifMetadataViewer(QMainWindow):
             self.statusBar().showMessage("Error loading image")
     
     def extract_and_display_metadata(self, file_path):
-        """Extract and display EXIF metadata from the image."""
+        """Extract and display both basic image info and EXIF metadata."""
         try:
+            # Get file statistics
+            file_stats = os.stat(file_path)
+            file_size = file_stats.st_size
+            
             # Open image with Pillow
             with Image.open(file_path) as image:
+                # Build comprehensive metadata text
+                metadata_text = "IMAGE INFORMATION\n" + "="*60 + "\n\n"
+                
+                # Basic file information
+                metadata_text += "FILE DETAILS:\n" + "-"*30 + "\n"
+                metadata_text += f"File Name: {os.path.basename(file_path)}\n"
+                metadata_text += f"File Path: {file_path}\n"
+                metadata_text += f"File Size: {self.format_file_size(file_size)}\n"
+                metadata_text += f"File Extension: {os.path.splitext(file_path)[1].upper()}\n\n"
+                
+                # Basic image properties
+                metadata_text += "IMAGE PROPERTIES:\n" + "-"*30 + "\n"
+                metadata_text += f"Format: {image.format}\n"
+                metadata_text += f"Mode: {image.mode}\n"
+                metadata_text += f"Size: {image.size[0]} x {image.size[1]} pixels\n"
+                metadata_text += f"Aspect Ratio: {image.size[0]/image.size[1]:.2f}\n"
+                
+                # Check if image has transparency
+                if image.mode in ('RGBA', 'LA') or (image.mode == 'P' and 'transparency' in image.info):
+                    metadata_text += "Has Transparency: Yes\n"
+                else:
+                    metadata_text += "Has Transparency: No\n"
+                
+                # Add color information
+                if hasattr(image, 'palette') and image.palette:
+                    metadata_text += f"Color Palette: {len(image.palette.palette)//3} colors\n"
+                
+                metadata_text += "\n"
+                
+                # Additional image info from PIL
+                if image.info:
+                    metadata_text += "ADDITIONAL IMAGE INFO:\n" + "-"*30 + "\n"
+                    for key, value in image.info.items():
+                        if key != 'exif':  # Skip raw EXIF data here
+                            metadata_text += f"{key}: {value}\n"
+                    metadata_text += "\n"
+                
+                # EXIF metadata
                 exif_data = image.getexif()
                 
-                print(exif_data)  # Debug: print raw EXIF data to console
-
-                if exif_data is not None:
-                    metadata_text = "EXIF Metadata:\n" + "="*50 + "\n\n"
-
-
+                if exif_data and len(exif_data) > 0:
+                    metadata_text += "EXIF METADATA:\n" + "-"*30 + "\n"
+                    
                     # Convert EXIF data to readable format
                     for tag_id, value in exif_data.items():
-                        tag_name = TAGS.get(tag_id, tag_id)
+                        tag_name = TAGS.get(tag_id, f"Tag_{tag_id}")
+                        
+                        # Handle special cases for better formatting
+                        if isinstance(value, bytes):
+                            try:
+                                value = value.decode('utf-8')
+                            except UnicodeDecodeError:
+                                value = f"<binary data: {len(value)} bytes>"
+                        elif isinstance(value, tuple) and len(value) == 2:
+                            # Handle rational numbers (common in EXIF)
+                            if value[1] != 0:
+                                value = f"{value[0]}/{value[1]} ({value[0]/value[1]:.3f})"
+                        
                         metadata_text += f"{tag_name}: {value}\n"
-                    
-                    self.metadata_text.setPlainText(metadata_text)
                 else:
-                    self.metadata_text.setPlainText("No EXIF metadata found in this image.")
+                    metadata_text += "EXIF METADATA:\n" + "-"*30 + "\n"
+                    metadata_text += "No EXIF metadata found in this image.\n"
+                    metadata_text += "(This is normal for PNG files, screenshots, or processed images)\n"
+                
+                self.metadata_text.setPlainText(metadata_text)
                     
         except Exception as e:
-            error_message = f"Error reading EXIF data: {str(e)}\n\n"
+            error_message = f"Error reading image metadata: {str(e)}\n\n"
             error_message += "This could be due to:\n"
             error_message += "- Unsupported image format\n"
             error_message += "- Corrupted image file\n"
-            error_message += "- Image has no EXIF data"
+            error_message += "- File access permissions"
             self.metadata_text.setPlainText(error_message)
-            self.statusBar().showMessage("Error reading EXIF data")
+            self.statusBar().showMessage("Error reading metadata")
+    
+    def format_file_size(self, size_bytes):
+        """Convert file size in bytes to human-readable format."""
+        if size_bytes == 0:
+            return "0 B"
+        
+        size_names = ["B", "KB", "MB", "GB"]
+        i = 0
+        size = float(size_bytes)
+        
+        while size >= 1024.0 and i < len(size_names) - 1:
+            size /= 1024.0
+            i += 1
+        
+        return f"{size:.1f} {size_names[i]} ({size_bytes:,} bytes)"
     
     def clear_metadata(self):
         """Clear the metadata display and image."""
