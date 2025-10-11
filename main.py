@@ -268,11 +268,11 @@ class ExifMetadataViewer(QMainWindow):
         from PyQt5.QtWidgets import QMessageBox
         QMessageBox.about(
             self,
-            "About EXIF Metadata Viewer",
-            "EXIF Metadata Viewer v1.0\n\n"
-            "A simple application for viewing image EXIF metadata.\n"
-            "Built with PyQt5 and Pillow.\n\n"
-            "Load an image to view its embedded metadata."
+            "About EXIFbuscator",
+            "EXIFbuscator 1.0\n\n"
+            "A python GUI program to manage EXIF metadata in images and obfuscate values such as location coordinates and time.\n\n"
+            "Made by Angel Juarez, Erik Shaver, and Daniel\n\n"
+            "Logo made by @ThatOnePers0n on github"
         )
 
 
