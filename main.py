@@ -137,7 +137,7 @@ class ExifMetadataViewer(QMainWindow):
 
         # Moon icon button (left of logo) - toggles to dark mode
         self.moon_button = QLabel()
-        self.moon_button.setPixmap(self.moon_icon.scaledToHeight(30, Qt.SmoothTransformation))
+        self.moon_button.setPixmap(self.moon_icon.scaledToHeight(70, Qt.SmoothTransformation))
         self.moon_button.setCursor(Qt.PointingHandCursor)
         self.moon_button.setToolTip("Switch to Dark Mode")
         self.moon_button.mousePressEvent = lambda event: self.toggle_theme(True)
@@ -152,7 +152,7 @@ class ExifMetadataViewer(QMainWindow):
             # Initial scaling - will be adjusted on resize
             self.update_logo_size()
         else:
-            self.logo_label.setText("EXIF Viewer")
+            self.logo_label.setText("EXIFsuscator")
             self.logo_label.setStyleSheet("font-weight: bold; font-size: 14pt;")
         
         self.logo_label.setAlignment(Qt.AlignCenter)
@@ -160,7 +160,7 @@ class ExifMetadataViewer(QMainWindow):
 
         # Sun icon button (right of logo) - toggles to light mode
         self.sun_button = QLabel()
-        self.sun_button.setPixmap(self.sun_icon.scaledToHeight(30, Qt.SmoothTransformation))
+        self.sun_button.setPixmap(self.sun_icon.scaledToHeight(70, Qt.SmoothTransformation))
         self.sun_button.setCursor(Qt.PointingHandCursor)
         self.sun_button.setToolTip("Switch to Light Mode")
         self.sun_button.mousePressEvent = lambda event: self.toggle_theme(False)
