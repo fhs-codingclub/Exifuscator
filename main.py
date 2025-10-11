@@ -395,7 +395,7 @@ class ExifMetadataViewer(QMainWindow):
             "About EXIFuscator",
             "EXIFbuscator 1.0\n\n"
             "A python GUI program to manage EXIF metadata in images and obfuscate values such as location coordinates and time.\n\n"
-            "Made by Angel Juarez, Erik Shaver, and Daniel\n\n"
+            "Made by Angel Juarez, Erik Shaver, and Daniel Aquino\n\n"
             "Logo made by @gabrielmaroni on github"
         )
 
