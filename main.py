@@ -82,6 +82,13 @@ class ExifMetadataViewer(QMainWindow):
         metadata_frame = QFrame()
         metadata_frame.setFrameStyle(QFrame.StyledPanel)
         metadata_layout = QVBoxLayout(metadata_frame)
+        # Top row with Load Image button aligned to the right
+        top_row = QHBoxLayout()
+        top_row.addStretch(1)
+        self.load_button_meta = QPushButton("Load Image")
+        self.load_button_meta.clicked.connect(self.load_image)
+        top_row.addWidget(self.load_button_meta)
+        metadata_layout.addLayout(top_row)
         
         # Metadata display area
         self.metadata_text = QTextEdit()
@@ -103,32 +110,47 @@ class ExifMetadataViewer(QMainWindow):
         parent.addWidget(metadata_frame)
     
     def create_toolbar(self):
-        """Create toolbar with logo on left and Load Image button on right."""
+        """Create toolbar with a dynamically centered, moveable logo and Load Image button on right."""
         toolbar = QToolBar()
         toolbar.setMovable(False)
         self.addToolBar(toolbar)
-        
-        # Add logo to toolbar
+        # keep a reference to the toolbar so other methods can query its size
+        self.toolbar = toolbar
+
+        # Create a container widget with horizontal layout for centering
+        container = QWidget()
+        layout = QHBoxLayout(container)
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.setSpacing(0)
+
+        # Left spacer
+        layout.addStretch(1)
+
+        # Logo label
+        self.logo_label = QLabel()
         pixmap = QPixmap("img/exifuscator_white.png")
-        logo_label = QLabel()
         if not pixmap.isNull():
-            # Scale logo to toolbar height (about 40px high)
-            scaled = pixmap.scaled(750, 200, Qt.KeepAspectRatio, Qt.SmoothTransformation)
-            logo_label.setPixmap(scaled)
+            # Scale logo to fit toolbar height
+            scaled = pixmap.scaledToHeight(max(24, self.toolbar.height() - 8), Qt.SmoothTransformation)
+            self.logo_label.setPixmap(scaled)
         else:
-            logo_label.setText("EXIF Viewer")
-            logo_label.setStyleSheet("font-weight: bold; font-size: 14pt;")
-        
-        logo_label.setAlignment(Qt.AlignLeft | Qt.AlignVCenter)
-        toolbar.addWidget(logo_label)
-        
-        # Add spacer to push Load Image button to the right
-        spacer = QWidget()
-        spacer.setSizePolicy(QWidget().sizePolicy().Expanding, QWidget().sizePolicy().Preferred)
-        toolbar.addWidget(spacer)
-        
-        # Add Load Image button to the right side
-    
+            self.logo_label.setText("EXIF Viewer")
+            self.logo_label.setStyleSheet("font-weight: bold; font-size: 14pt;")
+        self.logo_label.setAlignment(Qt.AlignCenter)
+        layout.addWidget(self.logo_label)
+
+        # Right spacer (pushes the load button to the far right)
+        layout.addStretch(1)
+
+        # Load Image button on the far right
+        self.load_button = QPushButton("Load Image")
+        self.load_button.clicked.connect(self.load_image)
+        layout.addWidget(self.load_button)
+        layout.setStretchFactor(self.logo_label, 0)
+        layout.setStretchFactor(self.load_button, 0)
+
+        toolbar.addWidget(container)
+
     def create_menu_bar(self):
         """Create the application menu bar."""
         menubar = self.menuBar()
@@ -260,6 +282,12 @@ class ExifMetadataViewer(QMainWindow):
 
     def resizeEvent(self, event):
         super().resizeEvent(event)
+        # Dynamically scale logo on resize
+        if hasattr(self, 'logo_label') and hasattr(self, 'toolbar'):
+            pixmap = QPixmap("img/exifuscator_white.png")
+            if not pixmap.isNull():
+                scaled = pixmap.scaledToHeight(max(24, self.toolbar.height() - 8), Qt.SmoothTransformation)
+                self.logo_label.setPixmap(scaled)
         if self._last_exif_data:
             self.update_metadata_display()
     
