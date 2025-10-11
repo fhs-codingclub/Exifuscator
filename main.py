@@ -7,6 +7,7 @@ from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QPixmap, QFont
 from PIL import Image
 from PIL.ExifTags import TAGS
+from Metadata_window import MetadataEditorDialog
 
 
 class ExifMetadataViewer(QMainWindow):
@@ -104,11 +105,12 @@ class ExifMetadataViewer(QMainWindow):
         self.clear_button.clicked.connect(self.clear_metadata)
         self.clear_button.setEnabled(False)
         metadata_layout.addWidget(self.clear_button)
-        
-        self.clear_button = QPushButton("Edit Metadata")
-        self.clear_button.clicked.connect(self.write_metadata)
-        self.clear_button.setEnabled(False)
-        metadata_layout.addWidget(self.clear_button)
+
+        # Edit metadata button
+        self.edit_button = QPushButton("Edit Metadata")
+        self.edit_button.clicked.connect(self.write_metadata)
+        self.edit_button.setEnabled(False)
+        metadata_layout.addWidget(self.edit_button)
         parent.addWidget(metadata_frame)
     
     def create_menu_bar(self):
@@ -149,6 +151,7 @@ class ExifMetadataViewer(QMainWindow):
             self.display_image(file_path)
             self.extract_and_display_metadata(file_path)
             self.clear_button.setEnabled(True)
+            self.edit_button.setEnabled(True)
             self.statusBar().showMessage(f"Loaded: {os.path.basename(file_path)}")
     
     def display_image(self, file_path):
@@ -206,16 +209,19 @@ class ExifMetadataViewer(QMainWindow):
             self.metadata_text.setPlainText(text)
     
 
-    def write_metadata(self, file_path):
-        try:
-            with Image.open(file_path) as image:
-                exif_data = image.getexif()
-
-                for tag_id, value in exif_data.items():
-                    exif_data[tag_id] = value
-                image.save(file_path, exif=exif_data)
-        except Exception as e:
-            print(f"Error writing EXIF data: {str(e)}")
+    def write_metadata(self, _=None):
+        if not self.current_image_path:
+            return
+        dlg = MetadataEditorDialog(self, self.current_image_path)
+        if dlg.exec_() == dlg.Accepted:
+            try:
+                with Image.open(self.current_image_path) as image:
+                    exif = image.getexif()
+                self._last_exif_data = dict(exif) if exif is not None else None
+                self.update_metadata_display()
+                self.statusBar().showMessage("Metadata saved")
+            except Exception:
+                pass
 
     def clear_metadata(self):
         """Clear the metadata display and image."""
