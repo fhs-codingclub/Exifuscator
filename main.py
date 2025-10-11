@@ -4,7 +4,8 @@ from PyQt5.QtWidgets import (QApplication, QMainWindow, QWidget, QVBoxLayout,
                              QHBoxLayout, QPushButton, QLabel, QFileDialog, 
                              QTextEdit, QScrollArea, QSplitter, QFrame, QToolBar)
 from PyQt5.QtCore import Qt
-from PyQt5.QtGui import QPixmap, QFont
+from PyQt5.QtGui import QPixmap, QFont, QIcon
+from PyQt5 import QtGui
 from PIL import Image
 from PIL.ExifTags import TAGS
 from Metadata_window import MetadataEditorDialog
@@ -20,11 +21,13 @@ class ExifMetadataViewer(QMainWindow):
         self.current_image_path = None
         self._last_exif_data = None
         self.init_ui()
+        
     
     def init_ui(self):
         """Initialize the user interface."""
-        self.setWindowTitle("EXIF Metadata Viewer")
-
+        self.setWindowTitle("EXIFbuscator")
+        self.setWindowIcon(QIcon('img/favicon.png'))
+        self.setWindowIcon(QApplication('img/favicon.png'))
         self.setGeometry(100, 100, 1000, 700)
 
         # Create menu bar first
@@ -111,7 +114,7 @@ class ExifMetadataViewer(QMainWindow):
         logo_label = QLabel()
         if not pixmap.isNull():
             # Scale logo to toolbar height (about 40px high)
-            scaled = pixmap.scaled(200, 40, Qt.KeepAspectRatio, Qt.SmoothTransformation)
+            scaled = pixmap.scaled(750, 200, Qt.KeepAspectRatio, Qt.SmoothTransformation)
             logo_label.setPixmap(scaled)
         else:
             logo_label.setText("EXIF Viewer")
@@ -126,10 +129,6 @@ class ExifMetadataViewer(QMainWindow):
         toolbar.addWidget(spacer)
         
         # Add Load Image button to the right side
-        self.load_button = QPushButton("Load Image")
-        self.load_button.clicked.connect(self.load_image)
-        self.load_button.setMinimumHeight(30)
-        toolbar.addWidget(self.load_button)
     
     def create_menu_bar(self):
         """Create the application menu bar."""
@@ -218,6 +217,11 @@ class ExifMetadataViewer(QMainWindow):
             error_message += "- Image has no EXIF data"
             self.metadata_text.setPlainText(error_message)
             self.statusBar().showMessage("Error reading EXIF data")
+
+       # self.load_button = QPushButton("Load Image")
+        #self.load_button.clicked.connect(self.load_image)
+        #self.load_button.setMinimumHeight(30)
+        #toolbar.addWidget(self.load_button)
 
     def update_metadata_display(self):
         if self._last_exif_data:
