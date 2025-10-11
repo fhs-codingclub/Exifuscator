@@ -131,7 +131,7 @@ class ExifMetadataViewer(QMainWindow):
         pixmap = QPixmap("img/exifuscator_white.png")
         if not pixmap.isNull():
             # Scale logo to fit toolbar height
-            scaled = pixmap.scaledToHeight(max(24, self.toolbar.height() - 8), Qt.SmoothTransformation)
+            scaled = pixmap.scaledToHeight(max(24, self.toolbar.height() - 20), Qt.SmoothTransformation)
             self.logo_label.setPixmap(scaled)
         else:
             self.logo_label.setText("EXIF Viewer")
@@ -142,12 +142,7 @@ class ExifMetadataViewer(QMainWindow):
         # Right spacer (pushes the load button to the far right)
         layout.addStretch(1)
 
-        # Load Image button on the far right
-        self.load_button = QPushButton("Load Image")
-        self.load_button.clicked.connect(self.load_image)
-        layout.addWidget(self.load_button)
-        layout.setStretchFactor(self.logo_label, 0)
-        layout.setStretchFactor(self.load_button, 0)
+
 
         toolbar.addWidget(container)
 
