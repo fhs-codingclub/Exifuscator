@@ -9,7 +9,6 @@ from PIL import Image
 from PIL.ExifTags import TAGS
 from Metadata_window import MetadataEditorDialog
 
-
 class ExifMetadataViewer(QMainWindow):
     """
     A simple GUI application for viewing EXIF metadata of images.
@@ -63,7 +62,8 @@ class ExifMetadataViewer(QMainWindow):
         self.load_button.clicked.connect(self.load_image)
         self.load_button.setMinimumHeight(40)
         image_layout.addWidget(self.load_button)
-        
+
+
         # Image display area with scroll
         self.image_scroll = QScrollArea()
         self.image_scroll.setWidgetResizable(True)
@@ -71,13 +71,14 @@ class ExifMetadataViewer(QMainWindow):
         
         self.image_label = QLabel("No image loaded")
         self.image_label.setAlignment(Qt.AlignCenter)
-        self.image_label.setStyleSheet("background-color: #f0f0f0; border: 2px dashed #ccc;")
+        self.image_label.setStyleSheet("background-color: #000000; border: 2px dashed #ccc;")
         self.image_label.setMinimumSize(400, 300)
-        
+
         self.image_scroll.setWidget(self.image_label)
         image_layout.addWidget(self.image_scroll)
-        
+
         parent.addWidget(image_frame)
+        
     
     def setup_metadata_panel(self, parent):
         """Setup the right panel for metadata display."""
@@ -142,9 +143,11 @@ class ExifMetadataViewer(QMainWindow):
             "",
             "Image Files (*.jpg *.jpeg *.png *.tiff *.bmp *.gif);;All Files (*)"
         )
+       
         
         if file_path:
             self.current_image_path = file_path
+
             self.display_image(file_path)
             self.extract_and_display_metadata(file_path)
             self.clear_button.setEnabled(True)
@@ -157,8 +160,9 @@ class ExifMetadataViewer(QMainWindow):
             pixmap = QPixmap(file_path)
             if not pixmap.isNull():
                 # Scale image to fit while maintaining aspect ratio
+                available = self.image_scroll.viewport().size()
                 scaled_pixmap = pixmap.scaled(
-                    self.image_scroll.size() - self.image_scroll.frameSize(),
+                    available,
                     Qt.KeepAspectRatio,
                     Qt.SmoothTransformation
                 )
@@ -254,6 +258,12 @@ def create_application():
     app = QApplication(sys.argv)
     app.setApplicationName("EXIF Metadata Viewer")
     app.setOrganizationName("CipherHacks")
+    # Apply dark style if available without making it a hard dependency
+    try:
+        import qdarkstyle
+        app.setStyleSheet(qdarkstyle.load_stylesheet_pyqt5())
+    except Exception:
+        pass
     
     viewer = ExifMetadataViewer()
     return app, viewer
