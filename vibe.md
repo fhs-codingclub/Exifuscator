@@ -48,8 +48,13 @@ Prompt: "On line 281 in main.py explain and implement a fix to the error "not en
 Model: GPT-5 (AGENT MODE)
 Platform: Visual Studio Code
 
-[2025-1011 11:47AM]
-Pronpt: "I'm noticing that sometimes the window just crashes when you try dragging the screen because of a resizing issue(line 278, in resizeEvent
+[2025-10-11 11:47AM]
+Prompt: "I'm noticing that sometimes the window just crashes when you try dragging the screen because of a resizing issue(line 278, in resizeEvent
     def resizeEvent(self, event):), and the logo is too big on some screens, so can you help us implement dynamic image resizing and to make the function simple so we can edit in the future."
-Model: Clause Sonnet 4.5 Preview (Agent Mode)
+Model: Claude Sonnet 4.5 Preview (Agent Mode)
+Platform: Visual Studio Code
+
+[2025-10-11 12:16PM]
+Prompt: ""
+Model: Claude Sonnet 4.5 Preview (Agent Mode)
 Platform: Visual Studio Code

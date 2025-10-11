@@ -26,7 +26,7 @@ class ExifMetadataViewer(QMainWindow):
     
     def init_ui(self):
         """Initialize the user interface."""
-        self.setWindowTitle("EXIFbuscator")
+        self.setWindowTitle("EXIFuscator")
         self.setWindowIcon(QIcon('img/favicon.png'))
         self.setGeometry(100, 100, 1000, 700)
 
