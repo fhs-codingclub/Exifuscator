@@ -152,7 +152,7 @@ class ExifMetadataViewer(QMainWindow):
             # Initial scaling - will be adjusted on resize
             self.update_logo_size()
         else:
-            self.logo_label.setText("EXIFsuscator")
+            self.logo_label.setText("EXIFfuscator")
             self.logo_label.setStyleSheet("font-weight: bold; font-size: 14pt;")
         
         self.logo_label.setAlignment(Qt.AlignCenter)
