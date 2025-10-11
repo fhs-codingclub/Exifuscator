@@ -9,4 +9,4 @@ A python GUI program to manage EXIF metadata in images and obfuscate values such
 <hr>
 
 Credits:
-<a href="github.com/ThatOnePers0n" target="_blank">@ThatOnePerson</a> for the logo
+<a href="https://github.com/ThatOnePers0n" target="_blank">@ThatOnePerson</a> for the logo
