@@ -23,3 +23,13 @@ Prompt: "Hello Chatgpt! how is it going? Can you help with making the = scale wi
 Platform: WindSurf
 Model: GPT-5 (low reasoning)
 
+[2025-10-11 10:25AM]
+Prompt: "I'm confused on how to add my logo panel to the main application. I've specified the function for it but I don't see it being added to the app."
+Model: GPT-5 mini (Agent Mode)
+Platform: Visual Studio Code
+
+[2025-10-11 10:34AM]
+Prompt: "I don't see the logo panel showing anywhere in the app. Can you investigate to see what the issue could be? The function is defined and the panel should be there. The image dimensions are 1657x352."
+Model: Claude Sonnet 4 (Agent Mode)
+Platform: Visual Studio Code
+

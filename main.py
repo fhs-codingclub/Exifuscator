@@ -41,10 +41,11 @@ class ExifMetadataViewer(QMainWindow):
         
         # Right panel for metadata display
         self.setup_metadata_panel(main_splitter)
-        self.setup_logo_panel(main_splitter)
         
-        # Set splitter proportions (60% image, 40% metadata)
-        main_splitter.setSizes([600, 400])
+        self.setup_logo_panel(main_splitter) 
+        
+        # Set splitter proportions (50% image, 30% metadata, 20% logo)
+        main_splitter.setSizes([500, 300, 200])
         
         # Create menu bar
         self.create_menu_bar()
@@ -81,10 +82,29 @@ class ExifMetadataViewer(QMainWindow):
         parent.addWidget(image_frame)
         
     def setup_logo_panel(self, parent):
+        # Create a small right-most panel to hold the logo
+        logo_frame = QFrame()
+        logo_frame.setFrameStyle(QFrame.StyledPanel)
+        logo_layout = QVBoxLayout(logo_frame)
+
         pixmap = QPixmap("img/exifuscator_white.png")
         logo_label = QLabel()
-        logo_label.setPixmap(pixmap)
+        # If the pixmap loads, scale it down to a reasonable size for the panel
+        if not pixmap.isNull():
+            # Scale to fit panel width while maintaining aspect ratio
+            # Use smaller dimensions since the original is very wide (1657x352)
+            scaled = pixmap.scaled(180, 100, Qt.KeepAspectRatio, Qt.SmoothTransformation)
+            logo_label.setPixmap(scaled)
+        else:
+            logo_label.setText("Logo not found")
+
         logo_label.setAlignment(Qt.AlignCenter)
+        logo_layout.addStretch()
+        logo_layout.addWidget(logo_label)
+        logo_layout.addStretch()
+
+        # Add the logo frame as a widget in the splitter so it becomes visible
+        parent.addWidget(logo_frame)
 
 
     def setup_metadata_panel(self, parent):
