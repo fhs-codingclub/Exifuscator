@@ -15,14 +15,15 @@ from PIL.ExifTags import TAGS
 class MetadataEditorDialog(QDialog):
     """
     Dynamic EXIF editor dialog. It discovers existing EXIF entries and
-    builds editable fields for text-like values. Saves back to the same
-    file using Pillow's EXIF API.
+    builds editable fields for text-like values. Updates in-memory data
+    without automatically saving to the file.
     """
 
     def __init__(self, parent, image_path: str):
         super().__init__(parent)
         self.setWindowTitle("Edit EXIF Metadata")
         self.image_path = image_path
+        self.parent_window = parent  # Store reference to parent
 
         self._editors = {}  # tag_id -> (QLineEdit, was_bytes: bool)
         self._build_ui()
@@ -43,7 +44,7 @@ class MetadataEditorDialog(QDialog):
         layout.addWidget(self.status_label)
 
         self.buttons = QDialogButtonBox(
-            QDialogButtonBox.Save | QDialogButtonBox.Cancel
+            QDialogButtonBox.Ok | QDialogButtonBox.Cancel
         )
         self.buttons.accepted.connect(self._on_save)
         self.buttons.rejected.connect(self.reject)
@@ -86,16 +87,20 @@ class MetadataEditorDialog(QDialog):
             self.status_label.setText(f"Warning: Unable to read EXIF ({e})")
 
     def _on_save(self):
+        """Update the parent's in-memory EXIF data without saving to file."""
         try:
             with Image.open(self.image_path) as img:
                 exif = img.getexif() or {}
 
+                # Update exif dictionary with edited values
                 for tag_id, (editor, was_bytes) in self._editors.items():
                     text = editor.text()
                     exif[tag_id] = text.encode("utf-8") if was_bytes else text
 
-                img.save(self.image_path, exif=exif)
+                # Update parent's _last_exif_data instead of saving to file
+                if hasattr(self.parent_window, '_last_exif_data'):
+                    self.parent_window._last_exif_data = dict(exif)
 
             self.accept()
         except Exception as e:
-            self.status_label.setText(f"Error saving metadata: {e}")
+            self.status_label.setText(f"Error updating metadata: {e}")

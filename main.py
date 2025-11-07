@@ -118,17 +118,17 @@ class ExifMetadataViewer(QMainWindow):
         self.metadata_text.setPlainText("Load an image to view its EXIF metadata")
         metadata_layout.addWidget(self.metadata_text)
         
-        # Clear metadata button
-        self.clear_button = QPushButton("Clear Image")
-        self.clear_button.clicked.connect(self.clear_metadata)
-        self.clear_button.setEnabled(False)
-        metadata_layout.addWidget(self.clear_button)
-
         # Edit metadata button
         self.edit_button = QPushButton("Edit Metadata")
         self.edit_button.clicked.connect(self.write_metadata)
         self.edit_button.setEnabled(False)
         metadata_layout.addWidget(self.edit_button)
+        
+        # Save image button
+        self.save_button = QPushButton("Save Image")
+        self.save_button.clicked.connect(self.save_image)
+        self.save_button.setEnabled(False)
+        metadata_layout.addWidget(self.save_button)
         parent.addWidget(metadata_frame)
     
     def create_toolbar(self):
@@ -269,12 +269,12 @@ class ExifMetadataViewer(QMainWindow):
 
             self.display_image(file_path)
             self.extract_and_display_metadata(file_path)
-            self.clear_button.setEnabled(True)
+            self.save_button.setEnabled(True)
             self.edit_button.setEnabled(True)
             self.statusBar().showMessage(f"Loaded: {os.path.basename(file_path)}")
     
     def randomize_metadata(self):
-        """Randomize the EXIF metadata of the current image."""
+        """Randomize the EXIF metadata of the current image (does not save automatically)."""
         
         if not self.current_image_path:
             return
@@ -320,12 +320,12 @@ class ExifMetadataViewer(QMainWindow):
                             #for other text fields generate random string
                             exif[tag_id] = ''.join(random.choices(string.ascii_letters + string.digits, k=10))
                         
-                        #save the image with modified exif data
-                img.save(self.current_image_path, exif=exif)
-
-                #update display
-                self.extract_and_display_metadata(self.current_image_path)
-                self.statusBar().showMessage("Metadata randomized successfully")
+                # Store the modified EXIF data for display and potential saving
+                self._last_exif_data = dict(exif)
+                
+                # Update display without saving
+                self.update_metadata_display()
+                self.statusBar().showMessage("Metadata randomized (not saved yet - click 'Save Image' to apply)")
         
         except Exception as e:
             self.statusBar().showMessage(f"Error reading EXIF data: {str(e)}")
@@ -428,29 +428,53 @@ class ExifMetadataViewer(QMainWindow):
             self.metadata_text.setPlainText(text)
     
     def write_metadata(self, _=None):
+        """Open the metadata editor dialog (does not save automatically)."""
         if not self.current_image_path:
             return
         dlg = MetadataEditorDialog(self, self.current_image_path)
         if dlg.exec_() == dlg.Accepted:
+            # Metadata was edited in the dialog, update display
             try:
                 with Image.open(self.current_image_path) as image:
                     exif = image.getexif()
                 self._last_exif_data = dict(exif) if exif is not None else None
                 self.update_metadata_display()
-                self.statusBar().showMessage("Metadata saved")
+                self.statusBar().showMessage("Metadata edited (not saved yet - click 'Save Image' to apply)")
             except Exception:
                 pass
 
-    def clear_metadata(self):
-        """Clear the metadata display and image."""
-        self.metadata_text.setPlainText("Load an image to view its EXIF metadata")
-        self.image_label.clear()
-        self.image_label.setText("No image loaded")
-        self.image_label.setStyleSheet("background-color: #f0f0f0; border: 2px dashed #ccc;")
-        self.current_image_path = None
-        self.clear_button.setEnabled(False)
-        self.statusBar().showMessage("Ready - Click 'Load Image' to begin")
-        self._last_exif_data = None
+    def save_image(self):
+        """Save the image with current metadata to a new file."""
+        if not self.current_image_path or not self._last_exif_data:
+            self.statusBar().showMessage("No image or metadata to save")
+            return
+        
+        # Get save file path from user
+        default_name = os.path.splitext(os.path.basename(self.current_image_path))[0]
+        default_ext = os.path.splitext(self.current_image_path)[1]
+        suggested_name = f"{default_name}_modified{default_ext}"
+        suggested_path = os.path.join(os.path.dirname(self.current_image_path), suggested_name)
+        
+        save_path, _ = QFileDialog.getSaveFileName(
+            self,
+            "Save Image As",
+            suggested_path,
+            "JPEG Images (*.jpg *.jpeg);;PNG Images (*.png);;TIFF Images (*.tiff *.tif);;All Files (*)"
+        )
+        
+        if save_path:
+            try:
+                with Image.open(self.current_image_path) as img:
+                    # Create a new exif object from the modified data
+                    exif_bytes = img.info.get('exif', b'')
+                    
+                    # Save with the modified EXIF data
+                    # For formats that support EXIF, we can pass it directly
+                    img.save(save_path, exif=self._last_exif_data)
+                    
+                self.statusBar().showMessage(f"Image saved successfully to: {os.path.basename(save_path)}")
+            except Exception as e:
+                self.statusBar().showMessage(f"Error saving image: {str(e)}")
 
     def resizeEvent(self, event):
         """Handle window resize events safely."""
